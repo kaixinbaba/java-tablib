@@ -23,6 +23,14 @@ public class Row implements Iterable {
         this(null, (Collection) null);
     }
 
+    Row(String tag) {
+        this(null, tag);
+    }
+
+    Row(Collection row) {
+        this(row, (Collection) null);
+    }
+
     Row(Collection row, String tag) {
         this(row, Lists.newArrayList(tag));
     }
