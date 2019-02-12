@@ -1,4 +1,4 @@
-package io.github.kaixinbaba;
+package io.github.java.tablib;
 
 import org.junit.Test;
 
