@@ -1,4 +1,4 @@
-package io.github.java.tablib.format;
+package io.github.java.tablib.formats;
 
 /**
  * 文件处理类的父接口

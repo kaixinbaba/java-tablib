@@ -1,6 +1,6 @@
-package io.github.java.tablib.format.excel;
+package io.github.java.tablib.formats.excel;
 
-import io.github.java.tablib.format.Format;
+import io.github.java.tablib.formats.Format;
 
 public class Xls implements Format {
 

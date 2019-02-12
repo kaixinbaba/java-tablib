@@ -1,6 +1,6 @@
-package io.github.java.tablib.format.yaml;
+package io.github.java.tablib.formats.yaml;
 
-import io.github.java.tablib.format.Format;
+import io.github.java.tablib.formats.Format;
 
 public class Yaml implements Format {
 

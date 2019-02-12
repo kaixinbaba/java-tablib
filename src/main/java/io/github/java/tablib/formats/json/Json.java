@@ -1,6 +1,6 @@
-package io.github.java.tablib.format.json;
+package io.github.java.tablib.formats.json;
 
-import io.github.java.tablib.format.Format;
+import io.github.java.tablib.formats.Format;
 
 public class Json implements Format {
 

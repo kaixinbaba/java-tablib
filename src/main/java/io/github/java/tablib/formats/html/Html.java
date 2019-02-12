@@ -1,6 +1,6 @@
-package io.github.java.tablib.format.html;
+package io.github.java.tablib.formats.html;
 
-import io.github.java.tablib.format.Format;
+import io.github.java.tablib.formats.Format;
 
 public class Html implements Format {
 

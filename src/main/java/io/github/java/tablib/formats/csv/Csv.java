@@ -1,6 +1,6 @@
-package io.github.java.tablib.format.csv;
+package io.github.java.tablib.formats.csv;
 
-import io.github.java.tablib.format.Format;
+import io.github.java.tablib.formats.Format;
 
 public class Csv implements Format {
 

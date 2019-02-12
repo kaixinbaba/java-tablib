@@ -1,6 +1,6 @@
-package io.github.java.tablib.format.tsv;
+package io.github.java.tablib.formats.tsv;
 
-import io.github.java.tablib.format.Format;
+import io.github.java.tablib.formats.Format;
 
 public class Tsv implements Format {
 

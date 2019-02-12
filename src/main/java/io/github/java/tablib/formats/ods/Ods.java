@@ -1,6 +1,6 @@
-package io.github.java.tablib.format.ods;
+package io.github.java.tablib.formats.ods;
 
-import io.github.java.tablib.format.Format;
+import io.github.java.tablib.formats.Format;
 
 public class Ods implements Format {
 
