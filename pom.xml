@@ -15,6 +15,38 @@
     </properties>
 
     <dependencies>
+        <!-- yaml -->
+        <!-- https://mvnrepository.com/artifact/org.yaml/snakeyaml -->
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.23</version>
+        </dependency>
+
+        <!-- json -->
+        <!-- https://mvnrepository.com/artifact/com.alibaba/fastjson -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.50</version>
+        </dependency>
+
+        <!-- csv, tsv -->
+        <!-- https://mvnrepository.com/artifact/com.opencsv/opencsv -->
+        <dependency>
+            <groupId>com.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>3.3</version>
+        </dependency>
+
+        <!-- dbf -->
+        <!-- https://mvnrepository.com/artifact/com.github.albfernandez/javadbf -->
+        <dependency>
+            <groupId>com.github.albfernandez</groupId>
+            <artifactId>javadbf</artifactId>
+            <version>1.9.2</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/junit/junit -->
         <dependency>
             <groupId>junit</groupId>
