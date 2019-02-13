@@ -1,12 +1,12 @@
 package io.github.java.tablib;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.junit.Test;
 
-import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Unit test for simple App.
@@ -19,22 +19,29 @@ public class JUnitDemo {
         System.out.println("hello world");
     }
 
+    @AllArgsConstructor
+    private static class Row {
+        @Getter
+        private int i;
+
+        @Override
+        public String toString() {
+            return String.valueOf(i);
+        }
+    }
+
     @Test
     public void testLists() {
-        List<List> c = Lists.newArrayList();
-        List a = Lists.newArrayList();
-        a.add(1);
-        a.add(2);
-        a.add(3);
-        List b = Lists.newArrayList();
-        b.add(1);
-        b.add(2);
-        b.add(3);
-        c.add(a);
-        c.add(b);
-        System.out.println(c);
-        List<Object> d = c.stream().map(l -> l.remove(1)).collect(Collectors.toList());
-        System.out.println(c);
-        System.out.println(d);
+        List<Row> rows = Lists.newArrayList();
+        rows.add(new Row(2));
+        rows.add(new Row(1));
+        rows.add(new Row(8));
+        rows.add(new Row(7));
+        rows.add(new Row(4));
+        rows.add(new Row(3));
+        System.out.println(rows);
+        rows.sort(Comparator.comparing(row -> ((Row) row).getI()).reversed());
+        System.out.println(rows);
+
     }
 }

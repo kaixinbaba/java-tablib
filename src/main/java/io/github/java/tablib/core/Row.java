@@ -5,10 +5,7 @@ import com.google.common.collect.Sets;
 import io.github.java.tablib.common.Tuple;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 代表的是一行数据
@@ -123,5 +120,24 @@ public class Row implements Iterable {
     @Override
     public Iterator iterator() {
         return this.row.iterator();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Row)) {
+            return false;
+        }
+        Row other = (Row) obj;
+        if (this.size() != other.size()) {
+            return false;
+        }
+        for (int i = 0; i < this.size(); i++) {
+            Object o1 = this.get(i);
+            Object o2 = other.get(i);
+            if (!Objects.equals(o1, o2)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

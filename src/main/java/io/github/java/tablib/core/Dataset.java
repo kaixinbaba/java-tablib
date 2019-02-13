@@ -2,21 +2,20 @@ package io.github.java.tablib.core;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import io.github.java.tablib.exceptions.HeadNotExistsException;
 import io.github.java.tablib.exceptions.InvalidDimensionsException;
 import io.github.java.tablib.formats.Format;
 import io.github.java.tablib.formats.Formats;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * 核心对象，支持了绝大部分的方法
  */
 @SuppressWarnings("all")
-public class Dataset {
+public class Dataset implements Cloneable {
 
 
     private static final Map<String, Format> formats = Maps.newHashMap();
@@ -59,6 +58,14 @@ public class Dataset {
         if (title != null) {
             this.title = title;
         }
+    }
+
+    private Dataset deepCopy(Dataset origin) {
+        List<Collection> copyData = origin.data.stream().map(r -> {
+            return r.toList();
+        }).collect(Collectors.toList());
+        List<String> copyHeaders = Lists.newArrayList(origin.headers);
+        return new Dataset(copyData, copyHeaders, origin.title);
     }
 
     private List<Row> initData(List<Collection> data) {
@@ -248,6 +255,17 @@ public class Dataset {
         return result;
     }
 
+    public void fromDict(List<Map<String, Object>> from) {
+        if (from == null || from.isEmpty()) {
+            return;
+        }
+        this.wipe();
+        this.headers = Lists.newArrayList(from.get(0).keySet());
+        this.data = from.stream().map(m -> {
+            return new Row(m.values());
+        }).collect(Collectors.toList());
+    }
+
     public List<List> toList() {
         if (this.isEmpty()) {
             return Lists.newArrayList();
@@ -257,8 +275,131 @@ public class Dataset {
         return result;
     }
 
+    /**
+     * this method will remove the origin headers
+     *
+     * @param from
+     */
+    public void fromList(List<List> from) {
+        if (from == null || from.isEmpty()) {
+            return;
+        }
+        this.wipe();
+        this.data = from.stream().map(l -> new Row(l)).collect(Collectors.toList());
+    }
+
+    public Dataset filter(String tag) {
+        Dataset copy = this.deepCopy(this);
+        copy.data = copy.data.stream().filter(r -> r.hasTag(tag)).collect(Collectors.toList());
+        return copy;
+    }
+
+    public Dataset sort(String head) {
+        this.checkHeadExists(head);
+        return sort(this.headers.indexOf(head));
+    }
+
+    public Dataset sort(String head, boolean reverse) {
+        this.checkHeadExists(head);
+        return sort(this.headers.indexOf(head), reverse);
+    }
+
+    public Dataset sort(String head, boolean inPlace, boolean reverse) {
+        this.checkHeadExists(head);
+        return sort(this.headers.indexOf(head), inPlace, reverse);
+
+    }
+
+    public Dataset sort(int headIndex) {
+        return sort(headIndex, false, false);
+    }
+
+    public Dataset sort(int headIndex, boolean reverse) {
+        return sort(headIndex, false, reverse);
+    }
+
+    /**
+     * @param headIndex sort by which head's index
+     * @param inPlace   true:replace current object, false:return a new copy object
+     * @param reverse
+     * @return
+     */
+    public Dataset sort(int headIndex, boolean inPlace, boolean reverse) {
+        if (this.isEmpty()) {
+            return this.handleInplace(inPlace, true);
+        }
+        Object o = this.data.get(0).get(0);
+        if (!(o instanceof Comparable)) {
+            return this.handleInplace(inPlace, false);
+        }
+        List<Row> _data = Lists.newArrayList(this.data);
+        if (reverse) {
+            _data.sort(((Comparator<Row>) (o1, o2) -> ((Comparable) o1.get(headIndex)).compareTo(o2.get(headIndex))).reversed());
+        } else {
+            _data.sort(((Comparator<Row>) (o1, o2) -> ((Comparable) o1.get(headIndex)).compareTo(o2.get(headIndex))));
+        }
+        if (inPlace) {
+            this.data = _data;
+            return this;
+        } else {
+            Dataset copy = this.deepCopy(this);
+            copy.data = _data;
+            return copy;
+        }
+    }
+
+    private Dataset handleInplace(boolean inPlace, boolean isEmpty) {
+        if (inPlace) {
+            return this;
+        } else {
+            if (isEmpty) {
+                return new Dataset();
+            } else {
+                return this.deepCopy(this);
+            }
+        }
+    }
+
+    public Dataset stack(Dataset other) {
+        Dataset result = this.deepCopy(this);
+        if (other.isEmpty()) {
+            return result;
+        }
+        if (this.width() != other.width()) {
+            throw new InvalidDimensionsException();
+        }
+        for (Row row : other.data) {
+            result.append(row.toList());
+        }
+        return result;
+    }
+
+    public void removeDuplicates() {
+        Set<Row> set = Sets.newLinkedHashSet();
+        set.addAll(this.data);
+        this.data = Lists.newArrayList(set);
+    }
+
+
     public boolean hasHead() {
         return this.headers != null && !this.headers.isEmpty();
+    }
+
+    /**
+     * Only clean data, not headers
+     *
+     * @return
+     */
+    public void clear() {
+        this.data.clear();
+    }
+
+    /**
+     * Clean data and headers
+     */
+    public void wipe() {
+        this.clear();
+        this.headers = null;
     }
 
     public int size() {
@@ -268,4 +409,55 @@ public class Dataset {
     public boolean isEmpty() {
         return size() == 0;
     }
+
+    // TODO method
+    public Dataset subset() {
+        return subset(null, null);
+    }
+
+    public Dataset subset(List<String> colIndex) {
+        return subset(null, colIndex);
+    }
+
+    public Dataset subset(List<Integer> rowIndex, List<String> colIndex) {
+        return null;
+    }
+
+    public Dataset stackCol(Dataset other) {
+        return null;
+    }
+
+    public Dataset transpose() {
+        return null;
+    }
+
+    public List getCol(String head) {
+        this.checkHeadExists(head);
+        return this.getCol(this.headers.indexOf(head));
+
+    }
+
+    public List getCol(int index) {
+        return null;
+    }
+
+    public void insertCol(int colIndex, List col, String head) {
+
+    }
+
+    public void rpushCol(List col, String head) {
+        insertCol(this.width(), col, head);
+    }
+
+    public void lpushCol(List col, String head) {
+        insertCol(0, col, head);
+    }
+
+    public void appendCol(List col, String head) {
+        rpushCol(col, head);
+    }
+
+    // formats about
+
+
 }
