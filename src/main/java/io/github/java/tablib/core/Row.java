@@ -78,8 +78,8 @@ public class Row implements Iterable {
         this.row.add(index, value);
     }
 
-    public void remove(int index) {
-        this.row.remove(index);
+    public Object remove(int index) {
+        return this.row.remove(index);
     }
 
     public void set(int index, Object value) {

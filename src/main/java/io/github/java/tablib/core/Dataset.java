@@ -2,10 +2,10 @@ package io.github.java.tablib.core;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import io.github.java.tablib.exceptions.HeadNotExistsException;
 import io.github.java.tablib.exceptions.InvalidDimensionsException;
 import io.github.java.tablib.formats.Format;
 import io.github.java.tablib.formats.Formats;
-import lombok.NonNull;
 
 import java.util.Collection;
 import java.util.List;
@@ -124,7 +124,7 @@ public class Dataset {
     }
 
     public void extend(Collection<Collection> rows) {
-        for(Collection row : rows) {
+        for (Collection row : rows) {
             this.append(row);
         }
     }
@@ -187,6 +187,78 @@ public class Dataset {
                 return this.headers.size();
             }
         }
+    }
+
+    public List get(int index) {
+        return this.data.get(index).toList();
+    }
+
+    public List get(String head) {
+        this.checkHeadExists(head);
+        int colIndex = this.headers.indexOf(head);
+        return this.data.stream().map(r -> {
+            return r.get(colIndex);
+        }).collect(Collectors.toList());
+    }
+
+    public void set(int index, Collection value) {
+        this.validate(value);
+        this.data.set(index, new Row(value));
+    }
+
+    public List remove(int index) {
+        Row remove = this.data.remove(index);
+        return remove.toList();
+    }
+
+    private void checkHeadExists(String head) {
+        if (!this.headers.contains(head)) {
+            throw new HeadNotExistsException();
+        }
+    }
+
+    public List remove(String head) {
+        this.checkHeadExists(head);
+        int colIndex = this.headers.indexOf(head);
+        List removed = this.data.stream().map(r -> {
+            return r.remove(colIndex);
+        }).collect(Collectors.toList());
+        return removed;
+    }
+
+    public List<Map<String, Object>> toDict() {
+        List<Map<String, Object>> result = Lists.newArrayList();
+        if (this.isEmpty()) {
+            return result;
+        }
+        if (!this.hasHead()) {
+            throw new HeadNotExistsException();
+        }
+        List<Row> _data = Lists.newArrayList(this.data);
+        for (int r = 0; r < this.height(); r++) {
+            Row row = _data.get(r);
+            Map<String, Object> dict = Maps.newLinkedHashMap();
+            for (int c = 0; c < this.width(); c++) {
+                String head = this.headers.get(c);
+                Object value = row.get(c);
+                dict.put(head, value);
+            }
+            result.add(dict);
+        }
+        return result;
+    }
+
+    public List<List> toList() {
+        if (this.isEmpty()) {
+            return Lists.newArrayList();
+        }
+        List<Row> _data = Lists.newArrayList(this.data);
+        List<List> result = _data.stream().map(r -> r.toList()).collect(Collectors.toList());
+        return result;
+    }
+
+    public boolean hasHead() {
+        return this.headers != null && !this.headers.isEmpty();
     }
 
     public int size() {
