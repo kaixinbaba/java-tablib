@@ -27,22 +27,22 @@ public class Row implements Iterable {
         this(null, tag);
     }
 
-    Row(Collection row) {
-        this(row, (Collection) null);
+    Row(Iterable row) {
+        this(row, (Iterable) null);
     }
 
-    Row(Collection row, String tag) {
+    Row(Iterable row, String tag) {
         this(row, Lists.newArrayList(tag));
     }
 
-    Row(Collection row, Collection tags) {
+    Row(Iterable row, Iterable tags) {
         this.row = Lists.newArrayList();
         if (row != null) {
-            this.row.addAll(row);
+            this.row.addAll(Lists.newArrayList(row));
         }
         this.tags = Lists.newArrayList();
         if (tags != null) {
-            this.tags.addAll(tags);
+            this.tags.addAll(Lists.newArrayList(tags));
         }
     }
 
