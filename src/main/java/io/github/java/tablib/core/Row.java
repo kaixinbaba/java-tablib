@@ -150,4 +150,16 @@ public class Row implements Iterable {
         }
         return true;
     }
+
+    @Override
+    public int hashCode() {
+        if (this.isEmpty()) {
+            return 0;
+        }
+        int hashcode = 0;
+        for (Object o : this.row) {
+            hashcode += o.hashCode();
+        }
+        return hashcode;
+    }
 }

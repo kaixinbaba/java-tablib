@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  * 核心对象，支持了绝大部分的方法
  */
 @SuppressWarnings("all")
-public class Dataset {
+public class Dataset implements Iterable<Row> {
 
 
     private static final Map<String, Format> formats = Maps.newHashMap();
@@ -56,11 +56,11 @@ public class Dataset {
                 throw new InvalidDimensionsException();
             }
         }
-        if (data != null) {
-            this.data = initData(data);
-        }
+        this.data = initData(data);
         if (headers != null) {
             this.headers = Lists.newArrayList(headers);
+        } else {
+            this.headers = Lists.newArrayList();
         }
         if (title != null) {
             this.title = title;
@@ -77,6 +77,9 @@ public class Dataset {
 
     private List<Row> initData(List<Collection> data) {
         List<Row> result = Lists.newArrayList();
+        if (data == null || data.isEmpty()) {
+            return result;
+        }
         for (Collection rowData : data) {
             result.add(new Row(rowData));
         }
@@ -88,7 +91,6 @@ public class Dataset {
     }
 
     public void setHeaders(Collection headers) {
-        validate(headers);
         if (headers == null || headers.isEmpty()) {
             this.headers = null;
         } else {
@@ -147,6 +149,18 @@ public class Dataset {
         }
     }
 
+    public void push(Collection row) {
+        this.rpush(row);
+    }
+
+    public void push(Collection row, String tag) {
+        this.rpush(row, tag);
+    }
+
+    public void push(Collection row, Iterable<String> tags) {
+        this.rpush(row, tags);
+    }
+
     public void rpush(Collection row) {
         this.insert(this.height(), row);
     }
@@ -192,7 +206,11 @@ public class Dataset {
     }
 
     public int height() {
-        return this.data.size();
+        try {
+            return this.data.size();
+        } catch (NullPointerException npe) {
+            return 0;
+        }
     }
 
     public int width() {
@@ -208,23 +226,24 @@ public class Dataset {
     }
 
     public List get(int index) {
+        if (index < 0) {
+            index = this.size() + index;
+        }
         return this.data.get(index).toList();
-    }
-
-    public List get(String head) {
-        this.checkHeadExists(head);
-        int colIndex = this.headers.indexOf(head);
-        return this.data.stream().map(r -> {
-            return r.get(colIndex);
-        }).collect(Collectors.toList());
     }
 
     public void set(int index, Collection value) {
         this.validate(value);
+        if (index < 0) {
+            index = this.size() + index;
+        }
         this.data.set(index, new Row(value));
     }
 
     public List remove(int index) {
+        if (index < 0) {
+            index = this.size() + index;
+        }
         Row remove = this.data.remove(index);
         return remove.toList();
     }
@@ -249,7 +268,7 @@ public class Dataset {
         if (this.isEmpty()) {
             return result;
         }
-        if (!this.hasHead()) {
+        if (!this.hasHeaders()) {
             throw new HeadNotExistsException();
         }
         List<Row> _data = Lists.newArrayList(this.data);
@@ -322,11 +341,11 @@ public class Dataset {
     }
 
     public Dataset sort(int headIndex) {
-        return sort(headIndex, false, false);
+        return sort(headIndex, true, false);
     }
 
     public Dataset sort(int headIndex, boolean reverse) {
-        return sort(headIndex, false, reverse);
+        return sort(headIndex, true, reverse);
     }
 
     /**
@@ -392,7 +411,7 @@ public class Dataset {
     }
 
 
-    public boolean hasHead() {
+    public boolean hasHeaders() {
         return this.headers != null && !this.headers.isEmpty();
     }
 
@@ -421,7 +440,6 @@ public class Dataset {
         return size() == 0;
     }
 
-    // TODO method
     public Dataset subset() {
         return subset(null, null);
     }
@@ -465,8 +483,8 @@ public class Dataset {
         }
         // check header
         // must both has or hasnot
-        if (this.hasHead() || other.hasHead()) {
-            if (!this.hasHead() || !other.hasHead()) {
+        if (this.hasHeaders() || other.hasHeaders()) {
+            if (!this.hasHeaders() || !other.hasHeaders()) {
                 throw new HeadNeededException();
             }
         }
@@ -487,7 +505,7 @@ public class Dataset {
         }
         Dataset copy = new Dataset();
         List<String> newHeaders = Lists.newArrayList();
-        if (this.hasHead()) {
+        if (this.hasHeaders()) {
             newHeaders.add(this.headers.get(0));
         }
         newHeaders.addAll(this.getCol(0));
@@ -495,7 +513,7 @@ public class Dataset {
         List<Row> newData = Lists.newArrayList();
         for (int i = 0; i < width(); i++) {
             List oneRow = Lists.newArrayList();
-            if (this.hasHead()) {
+            if (this.hasHeaders()) {
                 oneRow.add(this.headers.get(i));
             }
             oneRow.addAll(this.getCol(i));
@@ -512,7 +530,11 @@ public class Dataset {
     }
 
     public List getCol(int index) {
-        return this.data.stream().map(r -> r.get(index)).collect(Collectors.toList());
+        if (index < 0) {
+            index = this.width() + index;
+        }
+        final int newIndex = index;
+        return this.data.stream().map(r -> r.get(newIndex)).collect(Collectors.toList());
     }
 
     public void insertCol(int colIndex, List col) {
@@ -520,11 +542,14 @@ public class Dataset {
     }
 
     public void insertCol(int colIndex, List col, String head) {
-        if (this.hasHead() && StringUtils.isEmpty(head)) {
+        if (this.hasHeaders() && StringUtils.isEmpty(head)) {
             throw new HeadNeededException();
         }
         this.validate(null, col);
-        if (this.hasHead()) {
+        if (colIndex < 0) {
+            colIndex = this.width() + colIndex;
+        }
+        if (this.hasHeaders()) {
             this.headers.add(colIndex, head);
         }
         for (int i = 0; i < height(); i++) {
@@ -543,6 +568,11 @@ public class Dataset {
 
     public void appendCol(List col, String head) {
         rpushCol(col, head);
+    }
+
+    @Override
+    public Iterator<Row> iterator() {
+        return this.data.iterator();
     }
 
     // formats about
