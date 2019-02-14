@@ -20,7 +20,7 @@ public class JUnitDemo {
     }
 
     @AllArgsConstructor
-    private static class Row {
+    private static class TRow {
         @Getter
         private int i;
 
@@ -32,15 +32,15 @@ public class JUnitDemo {
 
     @Test
     public void testLists() {
-        List<Row> rows = Lists.newArrayList();
-        rows.add(new Row(2));
-        rows.add(new Row(1));
-        rows.add(new Row(8));
-        rows.add(new Row(7));
-        rows.add(new Row(4));
-        rows.add(new Row(3));
+        List<TRow> rows = Lists.newArrayList();
+        rows.add(new TRow(2));
+        rows.add(new TRow(1));
+        rows.add(new TRow(8));
+        rows.add(new TRow(7));
+        rows.add(new TRow(4));
+        rows.add(new TRow(3));
         System.out.println(rows);
-        rows.sort(Comparator.comparing(row -> ((Row) row).getI()).reversed());
+        rows.sort(Comparator.comparing(row -> ((TRow) row).getI()).reversed());
         System.out.println(rows);
 
     }

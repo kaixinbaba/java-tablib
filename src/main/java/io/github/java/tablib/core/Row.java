@@ -84,10 +84,16 @@ public class Row implements Iterable {
     }
 
     public void set(int index, Object value) {
+        if (index < 0) {
+            index = this.row.size() + index;
+        }
         this.row.set(index, value);
     }
 
     public Object get(int index) {
+        if (index < 0) {
+            index = this.row.size() + index;
+        }
         return this.row.get(index);
     }
 
