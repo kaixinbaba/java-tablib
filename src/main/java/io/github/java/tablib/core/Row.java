@@ -79,6 +79,10 @@ public class Row implements Iterable {
         return this.row.remove(index);
     }
 
+    public void extend(Collection other) {
+        this.row.addAll(other);
+    }
+
     public void set(int index, Object value) {
         this.row.set(index, value);
     }

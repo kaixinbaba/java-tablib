@@ -3,10 +3,13 @@ package io.github.java.tablib.core;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import io.github.java.tablib.exceptions.HeadNeededException;
 import io.github.java.tablib.exceptions.HeadNotExistsException;
 import io.github.java.tablib.exceptions.InvalidDimensionsException;
 import io.github.java.tablib.formats.Format;
 import io.github.java.tablib.formats.Formats;
+import io.github.java.tablib.utils.TablibUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -41,6 +44,10 @@ public class Dataset implements Cloneable {
 
     public Dataset(List<Collection> data) {
         this(data, null, null);
+    }
+
+    public Dataset(List<Collection> data, List headers) {
+        this(data, headers, null);
     }
 
     public Dataset(List<Collection> data, List headers, String title) {
@@ -90,7 +97,11 @@ public class Dataset implements Cloneable {
     }
 
     private boolean validate(Collection row) {
-        return validate(row, null, true);
+        return validate(row, null, false);
+    }
+
+    private boolean validate(Collection row, Collection col) {
+        return validate(row, col, false);
     }
 
     private boolean validate(Collection row, Collection col, boolean safety) {
@@ -419,30 +430,107 @@ public class Dataset implements Cloneable {
         return subset(null, colIndex);
     }
 
-    public Dataset subset(List<Integer> rowIndex, List<String> colIndex) {
-        return null;
+
+    /**
+     * return a new subset, without origin's title
+     * @param rowIndex
+     * @param colHeaderIndex
+     * @return
+     */
+    public Dataset subset(List<Integer> rowIndex, List<String> colHeaderIndex) {
+        if (this.isEmpty()) {
+            return new Dataset();
+        }
+        if (rowIndex == null || rowIndex.isEmpty()) {
+            rowIndex = TablibUtils.range(this.height());
+        }
+        if (colHeaderIndex == null || colHeaderIndex.isEmpty()) {
+            colHeaderIndex = Lists.newArrayList(this.headers);
+        }
+        List<Integer> colNumberIndex = colHeaderIndex.stream().map(h -> this.headers.indexOf(h)).collect(Collectors.toList());
+        Dataset subset = new Dataset();
+        subset.data = rowIndex.stream().map(i -> {
+            final Row row = this.data.get(i);
+            Row newRow = new Row(colNumberIndex.stream().map(ci -> row.get(ci)).collect(Collectors.toList()));
+            return newRow;
+        }).collect(Collectors.toList());
+        subset.headers = Lists.newArrayList(colHeaderIndex);
+        return subset;
     }
 
     public Dataset stackCol(Dataset other) {
-        return null;
+        Dataset copy = this.deepCopy(this);
+        if (other == null || other.isEmpty()) {
+            return copy;
+        }
+        // check header
+        // must both has or hasnot
+        if (this.hasHead() || other.hasHead()) {
+            if (!this.hasHead() || !other.hasHead()) {
+                throw new HeadNeededException();
+            }
+        }
+        // check height
+        if (this.height() != other.height()) {
+            throw new InvalidDimensionsException();
+        }
+        copy.headers.addAll(other.headers);
+        for (int i = 0; i < copy.height(); i++) {
+            copy.data.get(i).extend(other.data.get(i).toList());
+        }
+        return copy;
     }
 
     public Dataset transpose() {
-        return null;
+        if (this.isEmpty()) {
+            return null;
+        }
+        Dataset copy = new Dataset();
+        List<String> newHeaders = Lists.newArrayList();
+        if (this.hasHead()) {
+            newHeaders.add(this.headers.get(0));
+        }
+        newHeaders.addAll(this.getCol(0));
+        copy.headers = newHeaders;
+        List<Row> newData = Lists.newArrayList();
+        for (int i = 0; i < width(); i++) {
+            List oneRow = Lists.newArrayList();
+            if (this.hasHead()) {
+                oneRow.add(this.headers.get(i));
+            }
+            oneRow.addAll(this.getCol(i));
+            Row newRow = new Row(oneRow);
+            newData.add(newRow);
+        }
+        copy.data = newData;
+        return copy;
     }
 
     public List getCol(String head) {
         this.checkHeadExists(head);
         return this.getCol(this.headers.indexOf(head));
-
     }
 
     public List getCol(int index) {
-        return null;
+        return this.data.stream().map(r -> r.get(index)).collect(Collectors.toList());
+    }
+
+    public void insertCol(int colIndex, List col) {
+        insertCol(colIndex, col, null);
     }
 
     public void insertCol(int colIndex, List col, String head) {
-
+        if (this.hasHead() && StringUtils.isEmpty(head)) {
+            throw new HeadNeededException();
+        }
+        this.validate(null, col);
+        if (this.hasHead()) {
+            this.headers.add(colIndex, head);
+        }
+        for (int i = 0; i < height(); i++) {
+            Row row = this.data.get(i);
+            row.insert(colIndex, col.get(i));
+        }
     }
 
     public void rpushCol(List col, String head) {
