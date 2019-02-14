@@ -91,6 +91,10 @@ public class Dataset implements Iterable<Row> {
         return this.headers;
     }
 
+    public void removeHeaders() {
+        this.setHeaders(null);
+    }
+
     public void setHeaders(Collection headers) {
         if (headers == null || headers.isEmpty()) {
             this.headers = null;
@@ -591,6 +595,16 @@ public class Dataset implements Iterable<Row> {
     @Override
     public Iterator<Row> iterator() {
         return this.data.iterator();
+    }
+
+    @Override
+    public String toString() {
+        return String.format("[Dataset%s], width=%s, height=%s, headers=%s",
+                this.title == null ? "" : this.title,
+                this.width(),
+                this.height(),
+                this.hasHeaders() ? this.headers : "Wait be set up"
+        );
     }
 
     // formats about

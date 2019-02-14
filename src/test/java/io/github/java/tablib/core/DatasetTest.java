@@ -28,6 +28,8 @@ public class DatasetTest {
         Assert.assertTrue(this.dataset.hasHeaders());
         List<String> headers = this.dataset.getHeaders();
         Assert.assertEquals(strings.size(), headers.size());
+        this.dataset.removeHeaders();
+        Assert.assertFalse(this.dataset.hasHeaders());
     }
     @Test
     public void isEmpty() {
