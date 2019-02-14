@@ -210,4 +210,30 @@ public class DatasetTest {
         Assert.assertEquals(this.dataset.height() + 1, transpose.width());
     }
 
+    @Test
+    public void testFilter() {
+        this.dataset.setHeaders(Lists.newArrayList("name", "age", "sex"));
+        this.dataset.append(Lists.newArrayList("123", "18", "nan"), "classA");
+        this.dataset.append(Lists.newArrayList("abc", "56", "nv"), "classB");
+        this.dataset.append(Lists.newArrayList("efg", "25", "ier"), "classC");
+        Dataset classA = this.dataset.filter("classA");
+        Assert.assertNotEquals(this.dataset, classA);
+        Assert.assertEquals(this.dataset.height(), 3);
+        Assert.assertEquals(classA.height(), 1);
+        Dataset classTwo = this.dataset.filter(Lists.newArrayList("classA", "classC"));
+        Assert.assertEquals(classTwo.height(), 2);
+    }
+
+    @Test
+    public void testSort() {
+        this.dataset.setHeaders(Lists.newArrayList("name", "age", "sex"));
+        this.dataset.append(Lists.newArrayList("c", 18.2, "nan"));
+        this.dataset.append(Lists.newArrayList("a", 56.5634454, "nv"));
+        this.dataset.append(Lists.newArrayList("b", 25.3, "ier"));
+        Dataset name = this.dataset.sort("name");
+        Assert.assertEquals(name.get(0).get(0), "a");
+        Dataset age = this.dataset.sort("age");
+        Assert.assertEquals(age.get(0).get(0), "c");
+    }
+
 }

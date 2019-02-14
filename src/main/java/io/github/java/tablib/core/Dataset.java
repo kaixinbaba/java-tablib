@@ -3,6 +3,7 @@ package io.github.java.tablib.core;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import io.github.java.tablib.exceptions.ColumnDataTypeMustSameException;
 import io.github.java.tablib.exceptions.HeadNeededException;
 import io.github.java.tablib.exceptions.HeadNotExistsException;
 import io.github.java.tablib.exceptions.InvalidDimensionsException;
@@ -68,11 +69,11 @@ public class Dataset implements Iterable<Row> {
     }
 
     private Dataset deepCopy(Dataset origin) {
-        List<Collection> copyData = origin.data.stream().map(r -> {
-            return r.toList();
-        }).collect(Collectors.toList());
-        List<String> copyHeaders = Lists.newArrayList(origin.headers);
-        return new Dataset(copyData, copyHeaders, origin.title);
+        Dataset copy = new Dataset();
+        copy.data = origin.data.stream().map(r -> new Row(r.toList(), r.getTags())).collect(Collectors.toList());
+        copy.headers = Lists.newArrayList(origin.headers);
+        copy.title = origin.title;
+        return copy;
     }
 
     private List<Row> initData(List<Collection> data) {
@@ -141,6 +142,14 @@ public class Dataset implements Iterable<Row> {
 
     public void append(Collection row) {
         this.rpush(row);
+    }
+
+    public void append(Collection row, String tag) {
+        this.rpush(row, tag);
+    }
+
+    public void append(Collection row, Iterable<String> tags) {
+        this.rpush(row, tags);
     }
 
     public void extend(Collection<Collection> rows) {
@@ -318,10 +327,14 @@ public class Dataset implements Iterable<Row> {
         this.data = from.stream().map(l -> new Row(l)).collect(Collectors.toList());
     }
 
-    public Dataset filter(String tag) {
+    public Dataset filter(Collection<String> tags) {
         Dataset copy = this.deepCopy(this);
-        copy.data = copy.data.stream().filter(r -> r.hasTag(tag)).collect(Collectors.toList());
+        copy.data = copy.data.stream().filter(r -> r.hasTag(tags)).collect(Collectors.toList());
         return copy;
+    }
+
+    public Dataset filter(String tag) {
+        return filter(Lists.newArrayList(tag));
     }
 
     public Dataset sort(String head) {
@@ -341,11 +354,11 @@ public class Dataset implements Iterable<Row> {
     }
 
     public Dataset sort(int headIndex) {
-        return sort(headIndex, true, false);
+        return sort(headIndex, false, false);
     }
 
     public Dataset sort(int headIndex, boolean reverse) {
-        return sort(headIndex, true, reverse);
+        return sort(headIndex, false, reverse);
     }
 
     /**
@@ -358,15 +371,19 @@ public class Dataset implements Iterable<Row> {
         if (this.isEmpty()) {
             return this.handleInplace(inPlace, true);
         }
-        Object o = this.data.get(0).get(0);
-        if (!(o instanceof Comparable)) {
-            return this.handleInplace(inPlace, false);
+        if (headIndex < 0) {
+            headIndex = this.width() + headIndex;
         }
+        final int newHeadIndex = headIndex;
         List<Row> _data = Lists.newArrayList(this.data);
-        if (reverse) {
-            _data.sort(((Comparator<Row>) (o1, o2) -> ((Comparable) o1.get(headIndex)).compareTo(o2.get(headIndex))).reversed());
-        } else {
-            _data.sort(((Comparator<Row>) (o1, o2) -> ((Comparable) o1.get(headIndex)).compareTo(o2.get(headIndex))));
+        try {
+            if (reverse) {
+                _data.sort(((Comparator<Row>) (o1, o2) -> ((Comparable) o1.get(newHeadIndex)).compareTo(o2.get(newHeadIndex))).reversed());
+            } else {
+                _data.sort(((Comparator<Row>) (o1, o2) -> ((Comparable) o1.get(newHeadIndex)).compareTo(o2.get(newHeadIndex))));
+            }
+        } catch (ClassCastException cce) {
+            throw new ColumnDataTypeMustSameException(newHeadIndex);
         }
         if (inPlace) {
             this.data = _data;
@@ -451,6 +468,7 @@ public class Dataset implements Iterable<Row> {
 
     /**
      * return a new subset, without origin's title
+     *
      * @param rowIndex
      * @param colHeaderIndex
      * @return

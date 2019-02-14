@@ -3,6 +3,7 @@ package io.github.java.tablib.core;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.github.java.tablib.common.Tuple;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
@@ -14,6 +15,7 @@ import java.util.*;
 public class Row implements Iterable {
 
     private List row;
+    @Getter
     private List tags;
 
     Row() {
@@ -112,7 +114,7 @@ public class Row implements Iterable {
         return this.tags.contains(tag);
     }
 
-    public boolean hasTag(Collection tags) {
+    public boolean hasTag(Collection<String> tags) {
         if (tags == null || tags.isEmpty()) {
             return false;
         }
