@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  * 核心对象，支持了绝大部分的方法
  */
 @SuppressWarnings("all")
-public class Dataset implements Cloneable {
+public class Dataset {
 
 
     private static final Map<String, Format> formats = Maps.newHashMap();
