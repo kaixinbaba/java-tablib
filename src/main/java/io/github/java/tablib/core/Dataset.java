@@ -607,6 +607,19 @@ public class Dataset implements Iterable<Row> {
         );
     }
 
+    public String prettyString() {
+        return prettyString(true);
+    }
+
+    public String prettyString(boolean displayDetail) {
+        if (displayDetail) {
+            // TODO
+            return null;
+        } else {
+            return this.toString();
+        }
+    }
+
     // formats about
 
 
