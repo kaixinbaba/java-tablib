@@ -606,7 +606,7 @@ public class Dataset implements Iterable<Row> {
 
     @Override
     public String toString() {
-        return String.format("[Dataset%s], width=%s, height=%s, headers=%s",
+        return String.format("[Dataset%s], column width=%s, data length=%s, headers=%s",
                 this.title == null ? "" : " " + this.title,
                 this.width(),
                 this.height(),
