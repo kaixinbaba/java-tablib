@@ -10,6 +10,8 @@ import io.github.java.tablib.exceptions.InvalidDimensionsException;
 import io.github.java.tablib.formats.Format;
 import io.github.java.tablib.formats.Formats;
 import io.github.java.tablib.utils.TablibUtils;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
@@ -24,6 +26,9 @@ public class Dataset implements Iterable<Row> {
 
     private static final Map<String, Format> formats = Maps.newHashMap();
 
+    private static final String HEAD_SEP = "-";
+    private static final String COL_SEP = "|";
+
     static {
         registerFormats();
     }
@@ -37,6 +42,8 @@ public class Dataset implements Iterable<Row> {
     private List<Row> data;
     // 列名
     private List<String> headers;
+    @Setter
+    @Getter
     private String title;
 
     public Dataset() {
@@ -600,7 +607,7 @@ public class Dataset implements Iterable<Row> {
     @Override
     public String toString() {
         return String.format("[Dataset%s], width=%s, height=%s, headers=%s",
-                this.title == null ? "" : this.title,
+                this.title == null ? "" : " " + this.title,
                 this.width(),
                 this.height(),
                 this.hasHeaders() ? this.headers : "Wait be set up"
@@ -612,12 +619,37 @@ public class Dataset implements Iterable<Row> {
     }
 
     public String prettyString(boolean displayDetail) {
+        String simpleStatistics = this.toString();
         if (displayDetail) {
-            // TODO
-            return null;
+            List<Integer> fieldsLength = this.getMaxFieldLength();
+            String formatString = String.join(COL_SEP, fieldsLength.stream().map(l -> String.format("%%-%ds", l)).collect(Collectors.toList()));
+            List<String> result = Lists.newArrayList();
+            result.add(simpleStatistics);
+            if (this.hasHeaders()) {
+                result.add(String.format(formatString, this.headers.toArray()));
+                result.add(String.format(formatString,
+                        fieldsLength.stream().map(l -> TablibUtils.repeatStr(HEAD_SEP, l)).collect(Collectors.toList()).toArray()));
+            }
+            for (Row row : this.data) {
+                result.add(String.format(formatString, row.toArray()));
+            }
+            return String.join("\n", result);
         } else {
-            return this.toString();
+            return simpleStatistics;
         }
+    }
+
+    private List<Integer> getMaxFieldLength() {
+        List<Integer> fieldsLength = Lists.newArrayList();
+        int colLength = this.width();
+        for (int c = 0; c < colLength; c++) {
+            Integer max = Integer.max(Collections.max((List<Integer>) this.getCol(c)
+                    .stream()
+                    .map(o -> String.valueOf(o).length())
+                    .collect(Collectors.toList())), this.headers.get(c).length());
+            fieldsLength.add(max);
+        }
+        return fieldsLength;
     }
 
     // formats about

@@ -3,6 +3,7 @@ package io.github.java.tablib.core;
 import com.google.common.collect.Lists;
 import io.github.java.tablib.exceptions.InvalidDimensionsException;
 import io.github.java.tablib.exceptions.TablibBaseException;
+import io.github.java.tablib.utils.TablibUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -236,6 +237,18 @@ public class DatasetTest {
         Assert.assertEquals(name.get(0).get(0), "a");
         Dataset age = this.dataset.sort("age");
         Assert.assertEquals(age.get(0).get(0), "c");
+    }
+
+    @Test
+    public void testPrettyString() {
+        this.dataset.setHeaders(Lists.newArrayList("name", "age", "sex"));
+        this.dataset.append(Lists.newArrayList("c", 18.2, "nan"));
+        this.dataset.append(Lists.newArrayList("a", 56.5634454, "nv"));
+        this.dataset.append(Lists.newArrayList("b", 25.3, "ier"));
+        this.dataset.setTitle("xlsx");
+        System.out.println(dataset.prettyString(false));
+        System.out.println(TablibUtils.repeatStr("-", 60));
+        System.out.println(dataset.prettyString());
     }
 
 }

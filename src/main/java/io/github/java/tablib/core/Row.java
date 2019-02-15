@@ -53,6 +53,10 @@ public class Row implements Iterable {
         return Lists.newArrayList(this.row);
     }
 
+    public Object[] toArray() {
+        return Lists.newArrayList(this.row).toArray();
+    }
+
     public Set toSet() {
         return Sets.newHashSet(this.row);
     }

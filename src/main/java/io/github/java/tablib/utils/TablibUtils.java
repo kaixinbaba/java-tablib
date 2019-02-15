@@ -2,6 +2,7 @@ package io.github.java.tablib.utils;
 
 import com.google.common.collect.Lists;
 
+import java.util.Collections;
 import java.util.List;
 
 public abstract class TablibUtils {
@@ -20,5 +21,9 @@ public abstract class TablibUtils {
             result.add(i);
         }
         return result;
+    }
+
+    public static String repeatStr(String source, int n) {
+        return String.join("", Collections.nCopies(n, source));
     }
 }

@@ -77,6 +77,14 @@ public class RowTest {
     }
 
     @Test
+    public void testToArray() {
+        this.row.append("111");
+        this.row.append("222");
+        Object[] objects = this.row.toArray();
+        Assert.assertEquals(this.row.size(), objects.length);
+    }
+
+    @Test
     public void testToList() {
         this.row.append("111");
         this.row.append("222");
