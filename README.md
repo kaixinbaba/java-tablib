@@ -1,5 +1,5 @@
 # java-tablib
-Imitate tablib, Salute kennethreitz
+Inspired by [Python-tablib](https://github.com/kennethreitz/tablib), Salute [kennethreitz](https://github.com/kennethreitz)
 
 java-tablib is a format-agnostic tabular dataset library, written in Java.
 
